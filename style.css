@@ -3,6 +3,7 @@ body {
     color: #222;
     text-align: center;
     padding: 35px;
+    display: flex;
 }
 
 form,

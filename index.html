@@ -9,7 +9,7 @@
 
 
 <link rel="stylesheet" href="style.css">
-<script src="index.js"></script>
+<!-- <script src="index.js"></script>-->
 <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
 <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase-database.js"></script>
@@ -51,12 +51,96 @@
         </form>
     </div>
 
+
+    <!--control mesasge-->
+    <div id="wrapper">
+        <div id="menu">
+            <p class="welcome"> Control Messages <br><br>
+            </p>
+            <!--create ul list for show mesasge-->
+            <div id="chatbox">
+                <ul id="control-messages">
+                </ul>
+            </div>
+        </div>
+        <!--create a form to send mesasge-->
+        <form onsubmit="return sendControlMessage();">
+            <input type="text" name="" id="control-message" class="usermsg" size="63" placeholder="Text Message" autocomplete="off" />
+            <input type="submit" name="" class="button">
+        </form>
+    </div>
+
+
+
 </body>
 <script>
     let myName=prompt("Enter your name")
+    let roomName=prompt("Enter room name")
+    let streamID=prompt("Enter publishing-ID")
+    let streamKey
+
+
+    //start of roomName business logic---move to the top
+    firebase.database().ref(roomName + "-room_name/streamID").push().set({
+            "streamID":streamID, 
+        });
+    
+    //console.log(streamKey);
+
+    
+    firebase.database().ref(roomName + "-room_name/streamID").on("child_added", async function(snapshot){
+        //pass to console
+        await console.log(snapshot.val().message +"-added")
+
+    });
+
+    firebase.database().ref(roomName + "-room_name/streamID").on("child_removed", async function(snapshot){
+        await console.log(snapshot.val().message +"-left")
+    })
+
+    firebase.database().ref(roomName + "-room_name/streamID").orderByChild("streamID").equalTo(streamID).on("child_added", async function(snapshot) {
+        streamKey=snapshot.key
+        await console.log(snapshot.key);
+    });
+
+ 
+    async function closeIt()
+    {
+         await firebase.database().ref(roomName + "-room_name/streamID").child(streamKey).remove();
+        //whenever someone refreshes or closes the tab/browser
+        //here call function to add in the node that a person with the id has left
+        //var userValue = firebase.database().ref(roomName + "-room_name/streamID/" + streamKey).equalTo("streamID").once('value').then((snapshot) => {
+
+           // return snapshot.val() || [];
+       // });
+       // console.log(userValue +"Left");
+
+        
+    }
+
+    window.onbeforeunload = closeIt;
+
+
+
+    //
+
+
+
+
+
+
+
+
+
+
+
+
+//chat-feature-message
+
+
     const sendMessage=()=>{
         let message=document.getElementById("message").value;
-        firebase.database().ref("messages").push().set({
+        firebase.database().ref(roomName + "-room_name/chat_messages").push().set({
             "sender":myName,
             "message":message
         });
@@ -66,7 +150,7 @@
             return false;
     }
  
-    firebase.database().ref("messages").on("child_added", function(snapshot){
+    firebase.database().ref(roomName + "-room_name/chat_messages").on("child_added", function(snapshot){
 
         var html= "";
 
@@ -83,18 +167,60 @@
         html += "[ " + snapshot.val().sender +"] :" +snapshot.val().message;
         html += "</li>";
         document.getElementById("messages").innerHTML += html;
+        //pass to console
+        console.log(snapshot.val().sender + "-" +snapshot.val().message +"-added")
 
     });
 
     function deleteMessage(self){
         var messageId=self.getAttribute("data-id");
-        firebase.database().ref("messages").child(messageId).remove();
+        firebase.database().ref(roomName + "-room_name/chat_messages").child(messageId).remove();
     }
 
-    firebase.database().ref("messages").on("child_removed", function(snapshot){
+    firebase.database().ref(roomName + "-room_name/chat_messages").on("child_removed", function(snapshot){
         document.getElementById("message-" + snapshot.key).innerHTML ="This message has been removed"
+        console.log(snapshot.val().sender + "-" +snapshot.val().message +"-removed")
     })
 
+
+    //for control messages:
+    const sendControlMessage=()=>{
+        let message=document.getElementById("control-message").value;
+        firebase.database().ref(roomName + "-room_name/control_messages").push().set({
+            "message":message
+        });
+
+        let message1=document.getElementById("control-message")
+        message1.value=""
+            return false;
+    }
+
+    firebase.database().ref(roomName + "-room_name/control_messages").on("child_added", function(snapshot){
+
+        
+        //pass to console
+        console.log("CONTROL_MESSAGE" + "-" +snapshot.val().message)
+
+    });
+    //function deleteMessage(self){
+      //  var messageId=self.getAttribute("data-id");
+      //  firebase.database().ref("class_room_name/chat_messages").child(messageId).remove();
+    //}
+
+   // firebase.database().ref("class_room_name/chat_messages").on("child_removed", function(snapshot){
+      //  document.getElementById("message-" + snapshot.key).innerHTML ="This message has been removed"
+      //  console.log(snapshot.val().sender + "-" +snapshot.val().message +"-removed")
+  //  })
+
+
+
+
+    //end of control messages
+
+    //start of roomName business logic---move to the top
+
+
+    //
 
 </script>
 </html>
