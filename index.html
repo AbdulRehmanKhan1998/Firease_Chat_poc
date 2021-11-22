@@ -135,6 +135,7 @@
         console.log(snapshot.key);
     });
 
+
     async function closeIt()
     {
          await firebase.database().ref(roomName + "-room_name/streamID").child(streamKey).remove();
