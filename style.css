@@ -70,6 +70,10 @@ a:hover {
     border-radius: 5px;
 }
 
+.chat-message {
+    display: none;
+}
+
 #button:hover {
     background-color: rgb(10, 61, 79);
     color: white;
